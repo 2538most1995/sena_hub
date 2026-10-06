@@ -1,0 +1,13 @@
+/config/local.php
+/.local-credentials.txt
+/node_modules/
+/tests/artifacts/
+
+/.playwright-cli/
+/output/
+
+.DS_Store
+.env
+.env.*
+*.log
+*.bak

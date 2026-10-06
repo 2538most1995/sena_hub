@@ -1,0 +1,6 @@
+Options -Indexes
+DirectoryIndex index.php
+RedirectMatch 404 "(^|/)\.(?!well-known(?:/|$))"
+<FilesMatch "^(\..*|\.local-credentials\.txt|.*\.(sql|md|json|log))$">
+Require all denied
+</FilesMatch>

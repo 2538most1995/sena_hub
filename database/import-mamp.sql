@@ -1,0 +1,33 @@
+-- MAMP / local phpMyAdmin import: no database selection required.
+-- Creates tables only. Existing records and passwords are preserved.
+CREATE DATABASE IF NOT EXISTS `sena_digital_hub`
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `sena_digital_hub`;
+
+CREATE TABLE IF NOT EXISTS systems (
+ id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ name VARCHAR(150) NOT NULL,
+ description VARCHAR(255) NOT NULL DEFAULT '',
+ url TEXT NULL,
+ icon VARCHAR(40) NOT NULL DEFAULT 'apps',
+ color VARCHAR(7) NOT NULL DEFAULT '#176b55',
+ category VARCHAR(30) NOT NULL DEFAULT 'student',
+ sort_order INT NOT NULL DEFAULT 0,
+ active TINYINT(1) NOT NULL DEFAULT 1,
+ featured TINYINT(1) NOT NULL DEFAULT 0,
+ updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS admins (
+ id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+ username VARCHAR(100) NOT NULL UNIQUE,
+ password_hash VARCHAR(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS settings (
+ setting_key VARCHAR(50) PRIMARY KEY,
+ setting_value TEXT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS login_attempts (
+ attempt_key VARCHAR(64) PRIMARY KEY,
+ failures INT NOT NULL DEFAULT 0,
+ started_at BIGINT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
