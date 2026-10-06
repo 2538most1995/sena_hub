@@ -52,3 +52,10 @@ function updateAdminNav() {
   adminLinks.forEach(link => { if (link.hash === section) link.setAttribute('aria-current','location'); else link.removeAttribute('aria-current'); });
 }
 if (adminLinks.length) { updateAdminNav(); window.addEventListener('hashchange', updateAdminNav); }
+
+document.querySelectorAll('[data-service-favicon]').forEach(image => {
+  const show = () => { if (image.naturalWidth > 0) image.parentElement.classList.add('has-favicon'); };
+  image.addEventListener('load', show);
+  image.addEventListener('error', () => { image.parentElement.classList.remove('has-favicon'); });
+  if (image.complete) show();
+});

@@ -1,6 +1,7 @@
 /config/local.php
 /config/line.php
 /config/line-events/
+/config/favicon-cache/
 /.local-credentials.txt
 /node_modules/
 /tests/artifacts/
