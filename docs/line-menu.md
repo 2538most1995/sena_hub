@@ -4,7 +4,7 @@
 
 ## ตั้งค่าบนโฮสติ้ง
 
-1. อัปโหลด `line-webhook.php` ที่โฟลเดอร์ Hub เดิม
+1. อัปโหลด `line-webhook.php` และโฟลเดอร์ `assets/line/` ที่โฟลเดอร์ Hub เดิม (ต้องอัปโหลดทั้งโค้ดและรูป)
 2. คัดลอก `config/line.example.php` เป็น `config/line.php` บนเซิร์ฟเวอร์ ใส่ Channel secret และ Channel access token ของ Messaging API บัญชี SENA DIGITAL HUB เก็บไฟล์นี้เฉพาะเซิร์ฟเวอร์ ห้ามใส่ Git
 3. ใช้ PHP ที่เปิด cURL และออก HTTPS ไป api.line.me ได้ ให้ PHP เขียนโฟลเดอร์ `config/line-events` ได้ (สร้างเองด้วยสิทธิ์ 0700) ทั้งโฟลเดอร์ config ต้องถูกปิดการเข้าถึงผ่านเว็บด้วย `.htaccess` เดิม
 4. ตั้ง Webhook URL เป็น `https://krumost.com/sena_hub/line-webhook.php` แล้วกด Verify ให้สำเร็จ จากนั้นเปิด Use webhook
@@ -21,6 +21,20 @@ HTTP: 405 เมื่อเปิดผ่าน browser (endpoint รับ PO
 config/line-events เก็บเฉพาะ hash ของ event ID และสถานะส่งสำเร็จเพื่อป้องกันส่งซ้ำ เก็บไว้อย่างน้อยตลอดช่วง webhook redelivery สามารถลบไฟล์เก่ากว่า 7 วันตามรอบดูแลโฮสติ้ง
 
 ทดสอบในเครื่อง: `/Applications/MAMP/bin/php/php8.3.14/bin/php tests/line.php`
+
+## การ์ดเมนูดีไซน์ใหม่
+
+ภาพหัวการ์ดสีม่วงพร้อมภาพประกอบการศึกษา ปุ่มเปิดหน้าเว็บรวมแบบไล่สี บริการ 4 หมวดแบบ 2 คอลัมน์ และปุ่มติดต่อเต็มแถว ทุกปุ่มเป็น URI action ทั้งพื้นที่การ์ด กดแล้วเปิด URL เดิม ข้อความบริการเป็นข้อความจริงใน Flex และตัดบรรทัดได้เมื่อจอแคบ
+
+รูป JPG/PNG อยู่ใน `assets/line/` และอ้างผ่าน `hub_url` ต้องเปิดเข้าถึงรูปเหล่านี้ผ่าน HTTPS ได้โดยไม่ต้องล็อกอิน ไอคอนแปลงจาก Tabler ใน `assets/icons/` (ใบอนุญาต MIT อยู่ที่ `assets/icons/LICENSE.txt`) ภาพหัวการ์ดสร้างด้วย imagegen
+
+เมื่อ Pull/deploy แล้ว พิมพ์ “เมนู” ใน LINE เพื่อรับการ์ดใหม่ การ์ดที่ส่งไปก่อนหน้านี้จะยังเป็นดีไซน์เดิม ไม่ต้องแก้ Rich Menu หรือข้อมูลฐานข้อมูล ดาวน์โหลด JSON สำหรับตรวจใน Flex Message Simulator ได้โดยรัน:
+
+```sh
+/Applications/MAMP/bin/php/php8.3.14/bin/php -r 'require "line-webhook.php"; echo json_encode(sena_line_menu("https://krumost.com/sena_hub/")["contents"], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);' > /tmp/sena-line-flex.json
+```
+
+การแสดงผลจริงขึ้นอยู่กับ LINE บนอุปกรณ์ ควรลองรับการ์ดบน iOS/Android หลัง deploy โดยเฉพาะข้อความไทยและการโหลดรูป ดูข้อกำหนดเลย์เอาต์: https://developers.line.biz/en/docs/messaging-api/flex-message-layout/
 
 Reply messages ไม่ถูกนับในโควตาข้อความรายเดือน: https://developers.line.biz/en/docs/messaging-api/pricing/
 Join event รองรับการตอบกลับ: https://developers.line.biz/en/reference/messaging-api/#join-event

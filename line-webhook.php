@@ -13,20 +13,50 @@ function sena_line_should_reply(array $event): bool {
 }
 function sena_line_menu(string $base): array {
     $base = rtrim($base, '/').'/';
-    $buttons = [];
-    foreach ([['เปิดหน้าเว็บรวม',''],['ระบบนักศึกษา','?category=student'],['ครูและบุคลากร','?category=staff'],['ระบบบริหาร','?category=management'],['แหล่งเรียนรู้','?category=learning'],['ติดต่อเรา','?view=contact']] as [$label,$path]) {
-        $buttons[] = ['type'=>'button','style'=>$path === '' ? 'primary' : 'secondary','color'=>$path === '' ? '#7524EF' : '#F1EDFF','action'=>['type'=>'uri','label'=>$label,'uri'=>$base.$path]];
-    }
+    $asset = $base.'assets/line/';
+    // Raster icons are exported from the project's MIT-licensed Tabler set.
+    $image = static fn(string $name, string $size): array => [
+        'type'=>'image','url'=>$asset.$name.'.png','size'=>$size,'flex'=>0,
+        'aspectRatio'=>'1:1','aspectMode'=>'fit'];
+    $tile = static function (string $label, string $path, string $icon, string $tint, bool $primary = false) use ($base, $image): array {
+        $box = ['type'=>'box','layout'=>'horizontal','flex'=>1,'spacing'=>'sm',
+            'paddingAll'=>$primary ? '16px' : '10px','cornerRadius'=>'16px',
+            'borderWidth'=>'1px','borderColor'=>$primary ? '#AA6BFF' : '#E8E1FC',
+            'backgroundColor'=>$primary ? '#7524EF' : '#F8F5FF',
+            'alignItems'=>'center','action'=>['type'=>'uri','label'=>$label,'uri'=>$base.$path],
+            'contents'=>[
+                ['type'=>'box','layout'=>'vertical','width'=>$primary ? '30px' : '32px','height'=>$primary ? '30px' : '32px',
+                    'cornerRadius'=>'16px','backgroundColor'=>$tint,'justifyContent'=>'center','alignItems'=>'center',
+                    'flex'=>0,'contents'=>[$image($icon, $primary ? '26px' : '22px')]],
+                ['type'=>'text','text'=>$label,'weight'=>'bold','size'=>$primary ? '18px' : '12px',
+                    'color'=>$primary ? '#FFFFFF' : '#20163E','wrap'=>true,'flex'=>1],
+                $image($primary ? 'arrow-white' : 'arrow', '12px')]];
+        if ($primary) $box['background'] = ['type'=>'linearGradient','angle'=>'100deg','startColor'=>'#A443F5','endColor'=>'#6014E7'];
+        return $box;
+    };
     return ['type'=>'flex','altText'=>'SENA Digital Hub — กดเปิดหน้าเว็บรวมระบบ สกร.เสนา','contents'=>[
-        'type'=>'bubble',
-        'header'=>['type'=>'box','layout'=>'vertical','backgroundColor'=>'#7524EF','contents'=>[
-            ['type'=>'text','text'=>'SENA DIGITAL HUB','color'=>'#FFFFFF','weight'=>'bold','size'=>'xl','wrap'=>true],
-            ['type'=>'text','text'=>'ศูนย์รวมระบบ สกร.เสนา','color'=>'#FFFFFF','size'=>'sm','wrap'=>true]]],
-        'body'=>['type'=>'box','layout'=>'vertical','contents'=>[
-            ['type'=>'text','text'=>'ยินดีต้อนรับคุณครูและนักศึกษา','weight'=>'bold','wrap'=>true],
-            ['type'=>'text','text'=>'เลือกบริการด้านล่าง ใช้ได้ทั้งคอมและมือถือ','size'=>'sm','color'=>'#667085','wrap'=>true,'margin'=>'md']]],
-        'footer'=>['type'=>'box','layout'=>'vertical','spacing'=>'sm','contents'=>array_merge($buttons,[
-            ['type'=>'text','text'=>'พิมพ์ “เมนู” เพื่อเรียกอีกครั้ง','size'=>'xs','color'=>'#667085','align'=>'center','wrap'=>true,'margin'=>'md']])]
+        'type'=>'bubble','size'=>'mega',
+        'hero'=>['type'=>'image','url'=>$asset.'menu-hero-v2.jpg','size'=>'full',
+            'aspectRatio'=>'5:2','aspectMode'=>'cover'],
+        'body'=>['type'=>'box','layout'=>'vertical','backgroundColor'=>'#FFFFFF','paddingAll'=>'12px','spacing'=>'sm','contents'=>[
+            ['type'=>'box','layout'=>'horizontal','spacing'=>'md','paddingAll'=>'4px','margin'=>'sm','alignItems'=>'center','contents'=>[
+                ['type'=>'box','layout'=>'vertical','width'=>'44px','height'=>'44px','flex'=>0,'cornerRadius'=>'22px',
+                    'backgroundColor'=>'#F0E8FF','alignItems'=>'center','justifyContent'=>'center','contents'=>[$image('student','30px')]],
+                ['type'=>'box','layout'=>'vertical','spacing'=>'xs','contents'=>[
+                    ['type'=>'text','text'=>'ยินดีต้อนรับคุณครูและนักศึกษา','weight'=>'bold','size'=>'15px','color'=>'#20163E','wrap'=>true],
+                    ['type'=>'text','text'=>'เลือกบริการด้านล่าง ใช้ได้ทั้งคอมและมือถือ','size'=>'11px','color'=>'#77728F','wrap'=>true]]]]],
+            $tile('เปิดหน้าเว็บรวม','','portal','#8B38EF',true) + ['margin'=>'md'],
+            ['type'=>'box','layout'=>'horizontal','spacing'=>'sm','contents'=>[
+                $tile('ระบบนักศึกษา','?category=student','student','#EEE5FF'),
+                $tile('ครูและบุคลากร','?category=staff','staff','#FCE5F1')]],
+            ['type'=>'box','layout'=>'horizontal','spacing'=>'sm','contents'=>[
+                $tile('ระบบบริหาร','?category=management','management','#E6EBFF'),
+                $tile('แหล่งเรียนรู้','?category=learning','learning','#DCF8EE')]],
+            $tile('ติดต่อเรา','?view=contact','contact','#FFF0DB')]],
+        'footer'=>['type'=>'box','layout'=>'horizontal','paddingAll'=>'16px','spacing'=>'md','alignItems'=>'center','contents'=>[
+            ['type'=>'box','layout'=>'vertical','height'=>'1px','backgroundColor'=>'#E8E1FC','flex'=>1,'contents'=>[]],
+            ['type'=>'text','text'=>'พิมพ์ “เมนู” เพื่อเรียกอีกครั้ง','size'=>'11px','color'=>'#77728F','align'=>'center','wrap'=>true,'flex'=>4],
+            ['type'=>'box','layout'=>'vertical','height'=>'1px','backgroundColor'=>'#E8E1FC','flex'=>1,'contents'=>[]]]]
     ]];
 }
 

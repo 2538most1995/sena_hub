@@ -14,6 +14,22 @@ check_line(!sena_line_should_reply(['type'=>'memberJoined','replyToken'=>'test']
 check_line(sena_line_should_reply(['type'=>'message','message'=>['type'=>'text','text'=>' เมนู '],'replyToken'=>'test']), 'menu command');
 check_line(!sena_line_should_reply(['type'=>'message','message'=>['type'=>'text','text'=>'เรื่องส่วนตัว'],'replyToken'=>'test']), 'ignore unrelated messages');
 $menu = sena_line_menu('https://krumost.com/sena_hub/');
-check_line(count($menu['contents']['footer']['contents']) === 7, 'six buttons and hint');
-check_line($menu['contents']['footer']['contents'][1]['action']['uri'] === 'https://krumost.com/sena_hub/?category=student', 'student URL');
+$actions = [];
+$images = [];
+$walk = function (array $node) use (&$walk, &$actions, &$images): void {
+    if (isset($node['action'])) $actions[] = $node['action'];
+    if (($node['type'] ?? '') === 'image') $images[] = $node['url'];
+    foreach ($node as $child) if (is_array($child)) $walk($child);
+};
+$walk($menu);
+check_line(array_column($actions, 'uri') === array_map(fn($path) => 'https://krumost.com/sena_hub/'.$path,
+    ['', '?category=student', '?category=staff', '?category=management', '?category=learning', '?view=contact']), 'six service destinations preserved in order');
+check_line(count(array_filter($actions, fn($action) => $action['type'] === 'uri')) === 6, 'all service tiles are clickable URI actions');
+check_line($menu === sena_line_menu('https://krumost.com/sena_hub'), 'normalize trailing slash');
+foreach (array_unique($images) as $url) {
+    $path = dirname(__DIR__).'/'.substr($url, strlen('https://krumost.com/sena_hub/'));
+    $info = is_file($path) ? getimagesize($path) : false;
+    check_line($info !== false && in_array($info['mime'], ['image/png', 'image/jpeg'], true), 'LINE raster asset '.basename($path));
+}
+check_line(strlen(json_encode($menu, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) < 30000, 'bubble below LINE 30 KB limit');
 check_line(json_decode(json_encode($menu, JSON_THROW_ON_ERROR), true)['type'] === 'flex', 'valid JSON');
