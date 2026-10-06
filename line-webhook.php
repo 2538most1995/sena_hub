@@ -9,7 +9,7 @@ function sena_line_should_reply(array $event): bool {
     if (($event['mode'] ?? 'active') !== 'active' || empty($event['replyToken'])) return false;
     if (($event['type'] ?? '') === 'join') return in_array($event['source']['type'] ?? '', ['group','room'], true);
     return ($event['type'] ?? '') === 'message' && ($event['message']['type'] ?? '') === 'text'
-        && in_array(strtolower(trim($event['message']['text'] ?? '')), ['เมนู','menu','รวมระบบ','hub','sena'], true);
+        && in_array(strtolower(trim($event['message']['text'] ?? '')), ['เมนู','menu','รวมระบบ','hub','sena','เว็บ','ระบบ','รวมเว็บ','เสนา'], true);
 }
 function sena_line_menu(string $base): array {
     $base = rtrim($base, '/').'/';
