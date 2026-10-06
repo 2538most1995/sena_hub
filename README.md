@@ -69,6 +69,12 @@ Repository: https://github.com/2538most1995/sena_hub
 
 ## ตรวจสอบ
 
+## เมนูอัตโนมัติในกลุ่ม LINE
+
+เพิ่ม `line-webhook.php` สำหรับส่งการ์ดเมนูเมื่อบอตเข้ากลุ่มหรือได้รับคำว่า “เมนู” ใช้เฉพาะ Reply API อ่านขั้นตอนเชื่อมบัญชีและทดสอบใน [docs/line-menu.md](docs/line-menu.md) ค่า LINE จริงอยู่ใน `config/line.php` ซึ่งไม่ถูกอัปโหลดเข้า Git การอัปเดตนี้ไม่ต้องนำเข้า SQL
+
+### การทดสอบโปรเจกต์
+
 - PHP lint ทุกไฟล์
 - `python3 tests/smoke.py` ทดสอบ HTTP กับ MAMP: หน้าแรก, login/logout, เพิ่ม/แก้ไข/ซ่อน/ลบ, การ escape HTML, URL validation, CSRF และการปิดไฟล์ส่วนตัว สร้างแถวทดสอบแล้วลบคืน ต้องมีบัญชีเริ่มต้นใน `.local-credentials.txt`
 - ตรวจ UI ด้วย Playwright บน desktop และ mobile
