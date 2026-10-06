@@ -22,6 +22,19 @@ function db(): PDO {
     return $pdo;
 }
 function categories(): array { return ['student'=>'นักศึกษา','staff'=>'ครูและบุคลากร','management'=>'งานบริหาร','learning'=>'แหล่งเรียนรู้','reports'=>'รายงานและสถิติ','forms'=>'แบบฟอร์ม']; }
+/** Read additional categories without changing the existing database schema. */
+function system_categories(array $system, array $settings): array {
+    $stored = json_decode($settings['system_categories_'.($system['id'] ?? 0)] ?? '', true);
+    if (is_array($stored)) {
+        $selected = array_values(array_filter(array_keys(categories()), fn($key)=>in_array($key, $stored, true)));
+        if ($selected) return $selected;
+    }
+    $legacy = $system['category'] ?? '';
+    return isset(categories()[$legacy]) ? [$legacy] : [];
+}
+function system_category_labels(array $system, array $settings): string {
+    return implode(' · ', array_map(fn($key)=>categories()[$key], system_categories($system, $settings)));
+}
 function icons(): array { return ['school','users','building','book','chart-bar','file-text','compass','clipboard','certificate','apps']; }
 function icon(string $name, string $class=''): string {
     if (!in_array($name, array_merge(icons(), ['search','arrow-up-right','arrow-right','menu-2','x','shield-lock','logout','plus','adjustments','home','device-mobile','link','star','bell','user','phone','speakerphone','arrow-left','heart','stack']), true)) $name='apps';
@@ -55,7 +68,7 @@ function require_admin(): void {
     if (($account['role'] ?? 'admin') !== 'admin') { header('Location: account.php'); exit; }
 }
 function head(string $title, string $bodyClass=''): void { ?>
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#7524ef"><title><?= e($title) ?> · SENA Digital Hub</title><link rel="icon" type="image/png" sizes="32x32" href="<?= asset_base() ?>assets/favicon/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="<?= asset_base() ?>assets/favicon/favicon-16.png"><link rel="apple-touch-icon" sizes="180x180" href="<?= asset_base() ?>assets/favicon/apple-touch-icon.png"><link rel="stylesheet" href="<?= asset_base() ?>assets/css/app.css"><script defer src="<?= asset_base() ?>assets/js/app.js"></script><?php if($bodyClass==='portal'): ?><link rel="stylesheet" href="assets/css/portal.css"><?php elseif(str_contains($bodyClass,'admin-ui')): ?><link rel="stylesheet" href="<?= asset_base() ?>assets/css/admin.css"><?php endif; ?></head><body class="<?= e($bodyClass) ?>">
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#7524ef"><title><?= e($title) ?> · SENA Digital Hub</title><link rel="icon" type="image/png" sizes="32x32" href="<?= asset_base() ?>assets/favicon/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="<?= asset_base() ?>assets/favicon/favicon-16.png"><link rel="apple-touch-icon" sizes="180x180" href="<?= asset_base() ?>assets/favicon/apple-touch-icon.png"><link rel="stylesheet" href="<?= asset_base() ?>assets/css/app.css"><script defer src="<?= asset_base() ?>assets/js/app.js?v=multi-category-1"></script><?php if($bodyClass==='portal'): ?><link rel="stylesheet" href="assets/css/portal.css"><?php elseif(str_contains($bodyClass,'admin-ui')): ?><link rel="stylesheet" href="<?= asset_base() ?>assets/css/admin.css?v=multi-category-1"><?php endif; ?></head><body class="<?= e($bodyClass) ?>">
 <?php }
 function brand(string $home='./'): void { ?><a class="brand" href="<?= e($home) ?>"><img class="brand-logo" src="<?= asset_base() ?>assets/images/sena-logo.png" width="49" height="49" alt="ตรา สกร.เสนา"><span><strong>SENA <span>DIGITAL HUB</span></strong><small>ศูนย์รวมระบบดิจิทัล สกร.เสนา</small></span></a><?php }
 function unavailable(Throwable $error): void { error_log((string)$error); http_response_code(503); head('ระบบยังไม่พร้อม'); echo '<main class="auth-card"><h1>กำลังเตรียมระบบ</h1><p>กรุณาตรวจสอบการตั้งค่าฐานข้อมูล หรือติดต่อผู้ดูแลระบบ</p><a href="./">ลองอีกครั้ง</a></main></body></html>'; exit; }

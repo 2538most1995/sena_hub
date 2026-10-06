@@ -6,7 +6,7 @@ jar = http.cookiejar.CookieJar()
 client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
 def request(path='', data=None):
     try:
-        r = client.open(BASE + path, urllib.parse.urlencode(data).encode() if data is not None else None)
+        r = client.open(BASE + path, urllib.parse.urlencode(data, doseq=True).encode() if data is not None else None)
         return r.status, r.read().decode()
     except urllib.error.HTTPError as e:
         return e.code, e.read().decode()
@@ -39,6 +39,36 @@ try:
     _, public = request('?view=all')
     check('favicon.php?id='+created not in public, 'manual icon preference suppresses remote favicon')
     item['id'] = created
+    item.pop('category')
+    item['categories[]'] = ['forms', 'staff', 'forms']
+    _, page = request('admin/index.php', item)
+    check('ครูและบุคลากร · แบบฟอร์ม' in page, 'multiple categories save on one system')
+    _, edit = request('admin/index.php?edit='+created)
+    for key in ['forms', 'staff']:
+        check(re.search(r'name="categories\[\]" value="'+key+r'" checked',edit), 'edit retains category: '+key)
+    for key in ['forms', 'staff']:
+        _, public = request('?category='+key)
+        card = re.search(r'<article[^>]*data-category="staff forms"[^>]*>.*?Smoke &lt;script&gt;.*?</article>',public,re.S)
+        check(card and ' hidden' not in card[0].split('>')[0], 'system visible in category: '+key)
+    _, public = request('?view=all')
+    check(public.count('href="https://example.org/"') == 1, 'all categories list has no duplicate website')
+    for bad in [[], ['invalid'], 'forms', [['forms']]]:
+        item['categories[]'] = bad
+        # For non-array payloads exercise a malformed categories field directly.
+        malformed = dict(item)
+        if not isinstance(bad, list):
+            malformed.pop('categories[]'); malformed['categories'] = bad
+        _, page = request('admin/index.php', malformed)
+        check('กรุณาเลือกอย่างน้อย 1 หมวดหมู่' in page, 'invalid or empty categories rejected')
+    _, edit = request('admin/index.php?edit='+created)
+    check(all(re.search(r'name="categories\[\]" value="'+key+r'" checked',edit) for key in ['forms','staff']), 'rejected submissions preserve existing memberships')
+    item['categories[]'] = ['staff']
+    request('admin/index.php', item)
+    _, public = request('?category=forms')
+    card = re.search(r'<article[^>]*data-category="staff"[^>]*>.*?Smoke &lt;script&gt;.*?</article>',public,re.S)
+    check(card and ' hidden' in card[0].split('>')[0], 'unchecked category removes membership')
+    _, edit = request('admin/index.php?edit='+created)
+    check(re.search(r'name="categories\[\]" value="staff" checked',edit) and not re.search(r'name="categories\[\]" value="forms" checked',edit), 'single remaining category retained after reload')
     item['icon_mode'] = 'favicon'
     request('admin/index.php', item)
     _, public = request('?view=all')

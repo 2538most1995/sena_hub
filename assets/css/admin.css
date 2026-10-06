@@ -7,3 +7,15 @@
 .accounts-main{max-width:1100px;padding-top:34px;padding-bottom:48px}.accounts-main .panel>p{font-size:13px;color:var(--muted)}.accounts-main .panel{scroll-margin-top:110px}.accounts-main .form-actions{flex-wrap:wrap}.accounts-main .form-actions .button{flex:none}@media(max-width:767px){.accounts-main{padding:25px 16px 36px}.accounts-main .section-title{flex-wrap:wrap}.accounts-main .section-title h1{font-size:25px}}
 
 .favicon-refresh{margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}.favicon-refresh p{font-size:11px;color:var(--muted);margin:8px 0 0}
+
+/* A single website can belong to several categories. */
+.category-picker{border:1px solid var(--line);border-radius:12px;padding:14px;margin:18px 0;min-width:0}
+.category-picker legend{font-size:12px;font-weight:600;color:#4e5d77;padding:0 5px}
+.category-picker legend span{font-size:10px;font-weight:400;color:#8554c4;margin-left:6px}
+.category-picker p{font-size:11px;color:var(--muted);margin:0 0 12px;line-height:1.7}
+.category-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.admin-ui .category-options label{display:flex;align-items:center;gap:9px;margin:0;padding:11px 10px;min-height:44px;border:1px solid var(--line);border-radius:9px;cursor:pointer;background:#fff}
+.category-options label:has(input:checked){border-color:#a67ae8;background:#f6f0ff;color:#6d28ba}
+.category-options input{width:16px;height:16px;margin:0;accent-color:#762de5;flex-shrink:0}
+.category-options label:focus-within{outline:2px solid #d4b8fa;outline-offset:2px}
+@media(max-width:380px){.category-options{grid-template-columns:1fr}}

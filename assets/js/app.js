@@ -9,7 +9,7 @@ if (search) {
   function filter() {
     const term = search.value.trim().toLocaleLowerCase('th');
     let count = 0;
-    cards.forEach(card => { card.hidden = !((category === 'all' || card.dataset.category === category) && card.dataset.search.toLocaleLowerCase('th').includes(term)); if (!card.hidden) count++; });
+    cards.forEach(card => { card.hidden = !((category === 'all' || card.dataset.category.split(' ').includes(category)) && card.dataset.search.toLocaleLowerCase('th').includes(term)); if (!card.hidden) count++; });
     catalog.hidden = isHome && !term;
     if (home) home.hidden = Boolean(term);
     document.querySelector('#resultCount').textContent = `${count} ระบบ`;
