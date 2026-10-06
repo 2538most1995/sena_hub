@@ -20,8 +20,8 @@ function install_hub(PDO $pdo, string $schema, bool $seedDemo = false, ?string $
             throw new RuntimeException('โครงสร้างตารางไม่ใช่ SENA Digital Hub หยุดติดตั้งเพื่อรักษาข้อมูลเดิม');
         }
     }
-    if ($password !== null && strlen($password) < 12) {
-        throw new RuntimeException('รหัสผ่านต้องมีอย่างน้อย 12 ตัวอักษร');
+    if ($password !== null && (mb_strlen($password) < 8 || strlen($password) > 72 || str_contains($password, "\0"))) {
+        throw new RuntimeException('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร และไม่เกิน 72 ไบต์');
     }
     $pdo->exec($schema); // CREATE TABLE IF NOT EXISTS only; no DROP / ALTER / TRUNCATE.
     $createdPassword = null;

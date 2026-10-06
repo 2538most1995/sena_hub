@@ -37,7 +37,23 @@ function hub_public_url(string $url): string {
     $path = (string)parse_url($base, PHP_URL_PATH);
     return preg_match('/\.[a-z0-9]{1,8}$/i', $path) ? $base : $base.'/';
 }
-function require_admin(): void { header('Cache-Control: no-store'); if (empty($_SESSION['admin_id'])) { header('Location: login.php'); exit; } }
+function require_account(): array {
+    header('Cache-Control: no-store');
+    if (empty($_SESSION['admin_id'])) { header('Location: login.php'); exit; }
+    try {
+        $stmt = db()->prepare('SELECT * FROM admins WHERE id=?'); $stmt->execute([$_SESSION['admin_id']]); $account = $stmt->fetch();
+    } catch (Throwable $error) { unavailable($error); }
+    if (!$account || !in_array($account['role'] ?? 'admin', ['admin','teacher'], true)) { $_SESSION=[]; header('Location: login.php'); exit; }
+    $fingerprint = hash('sha256', $account['password_hash']);
+    if (isset($_SESSION['account_fingerprint']) && !hash_equals($_SESSION['account_fingerprint'], $fingerprint)) { $_SESSION=[]; header('Location: login.php'); exit; }
+    $_SESSION['account_fingerprint'] = $fingerprint;
+    $_SESSION['admin_username'] = $account['username'];
+    return $account;
+}
+function require_admin(): void {
+    $account = require_account();
+    if (($account['role'] ?? 'admin') !== 'admin') { header('Location: account.php'); exit; }
+}
 function head(string $title, string $bodyClass=''): void { ?>
 <!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#7524ef"><title><?= e($title) ?> · SENA Digital Hub</title><link rel="stylesheet" href="<?= asset_base() ?>assets/css/app.css"><script defer src="<?= asset_base() ?>assets/js/app.js"></script><?php if($bodyClass==='portal'): ?><link rel="stylesheet" href="assets/css/portal.css"><?php elseif(str_contains($bodyClass,'admin-ui')): ?><link rel="stylesheet" href="<?= asset_base() ?>assets/css/admin.css"><?php endif; ?></head><body class="<?= e($bodyClass) ?>">
 <?php }
