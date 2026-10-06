@@ -43,6 +43,14 @@ try:
     request('admin/index.php', item)
     _, public = request('?view=all')
     check('favicon.php?id='+created in public, 'favicon preference is persisted and rendered')
+    before_revision=re.search(r'favicon.php\?id='+created+r'&amp;v=([^"]+)',public)[1]
+    status,_=request('admin/index.php',{'action':'refresh_favicon','id':created})
+    check(status==403,'favicon refresh requires CSRF')
+    _,page=request('admin/index.php',{'csrf':csrf,'action':'refresh_favicon','id':created})
+    check('ล้างแคชแล้ว' in page,'admin can request favicon refresh')
+    _,public=request('?view=all')
+    after_revision=re.search(r'favicon.php\?id='+created+r'&amp;v=([^"]+)',public)[1]
+    check(before_revision!=after_revision,'favicon refresh invalidates browser URL')
     _, public = request()
     check('href="https://example.org/"' in public and 'rel="noopener noreferrer"' in public, 'saved link appears publicly with safe new tab')
     status, _ = request('admin/index.php', {'action':'delete','id':created})
