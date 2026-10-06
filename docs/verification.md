@@ -31,3 +31,11 @@
 - `--seed-demo` ไม่เพิ่มรายการซ้ำเมื่อมีระบบอยู่แล้ว
 - พบตารางของระบบอื่นหรือโครงสร้างตารางขัดแย้งจะหยุดก่อนเขียนข้อมูล
 - หลังทดสอบลบเฉพาะฐานข้อมูลชั่วคราวของการทดสอบ
+
+## Workspace administration (October 2026)
+
+- Isolated database test: `php tests/management.php` checks repeatable upgrade, category backfill, profile validation, active-account protection, auditing and cascade cleanup.
+- HTTP workflow: `python3 tests/management-http.py` checks admin/teacher boundaries, CSRF, profile/PNG upload, private avatar access, custom categories/navigation, invalid destinations, referenced-category protection, admin pagination across 31 records and public pagination/search across 231 records, bulk visibility, disabling/reactivating accounts and activity history.
+- Existing regression suites: accounts, accounts-http, smoke, uploads-http, install and LINE menu checks.
+- Browser QA: dashboard at 1440px; dashboard, menus, catalog and profile at 390px. Catalog/profile document width equals viewport width. Screenshots kept in ignored `output/playwright/`.
+- Limits: no production deployment or high-concurrency load benchmark performed. Public catalog switches to server-side search and 24-item pagination above 200 active services. Use `admin/upgrade.php` or `bin/upgrade-hub.php` for existing hosting databases before enabling new controls.

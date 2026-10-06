@@ -1,6 +1,6 @@
 'use strict';
 const search = document.querySelector('#systemSearch');
-if (search) {
+if (search && !document.querySelector('#systems')?.dataset.serverSearch) {
   const catalog = document.querySelector('#systems');
   const cards = [...catalog.querySelectorAll('.system-card')];
   const home = document.querySelector('#homeContent');
@@ -88,3 +88,28 @@ if (iconFile) {
     document.querySelector('#iconPreviewLabel').textContent = 'ตัวอย่างรูปใหม่ — กดบันทึกระบบเพื่อใช้งาน';
   });
 }
+
+// Native controls work without JavaScript; these add selection and form feedback.
+document.querySelectorAll('[data-select-all]').forEach(control => control.addEventListener('change', () => {
+  document.querySelectorAll(`.${control.dataset.selectAll}`).forEach(input => { input.checked = control.checked; });
+}));
+document.querySelectorAll('[data-avatar-input]').forEach(input => {
+  let url;
+  input.addEventListener('change', () => {
+    if (url) URL.revokeObjectURL(url);
+    const preview = document.querySelector('[data-avatar-preview]');
+    const file = input.files[0];
+    input.setCustomValidity(''); preview.hidden = true;
+    if (!file) return;
+    if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      input.setCustomValidity('เลือกรูป PNG, JPG หรือ WebP ขนาดไม่เกิน 2 MB'); input.reportValidity(); return;
+    }
+    url = URL.createObjectURL(file); preview.src = url; preview.hidden = false;
+  });
+});
+let dirtyForm = false;
+document.querySelectorAll('[data-dirty-form]').forEach(form => {
+  form.addEventListener('input', () => { dirtyForm = true; });
+  form.addEventListener('submit', () => { dirtyForm = false; });
+});
+window.addEventListener('beforeunload', event => { if (dirtyForm) { event.preventDefault(); event.returnValue = ''; } });

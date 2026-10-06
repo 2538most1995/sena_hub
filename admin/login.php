@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
  if ($attempt && $attempt['failures']>=5 && $attempt['started_at']>time()-900) { $error='เข้าสู่ระบบไม่สำเร็จหลายครั้ง กรุณารอ 15 นาที'; }
  else {
  $stmt=db()->prepare('SELECT * FROM admins WHERE username=?'); $stmt->execute([$username]); $admin=$stmt->fetch();
- if ($admin && in_array($admin['role'] ?? 'admin',['admin','teacher'],true) && password_verify((string)($_POST['password'] ?? ''),$admin['password_hash'])) {
+ if ($admin && ($admin['active'] ?? 1) && in_array($admin['role'] ?? 'admin',['admin','teacher'],true) && password_verify((string)($_POST['password'] ?? ''),$admin['password_hash'])) {
  session_regenerate_id(true); $_SESSION['admin_id']=$admin['id']; $_SESSION['admin_username']=$admin['username']; $_SESSION['csrf']=bin2hex(random_bytes(32));
  $_SESSION['account_fingerprint']=hash('sha256',$admin['password_hash']);
  $stmt=db()->prepare('DELETE FROM login_attempts WHERE attempt_key=?'); $stmt->execute([$key]); header('Location: '.(($admin['role'] ?? 'admin')==='teacher'?'account.php':'index.php')); exit;

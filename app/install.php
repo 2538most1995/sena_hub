@@ -8,6 +8,8 @@ function install_hub(PDO $pdo, string $schema, bool $seedDemo = false, ?string $
         'admins' => ['id','username','password_hash'],
         'settings' => ['setting_key','setting_value'],
         'login_attempts' => ['attempt_key','failures','started_at'],
+        'system_categories' => ['system_id','category_key'],
+        'audit_log' => ['id','actor_id','action','subject','created_at'],
     ];
     // Refuse a database containing another application's tables before any DDL or writes.
     $tables = $pdo->query('SHOW TABLES')->fetchAll(PDO::FETCH_COLUMN);
@@ -53,6 +55,7 @@ function install_hub(PDO $pdo, string $schema, bool $seedDemo = false, ?string $
         foreach (['public_url'=>'','contact'=>'ติดต่อครูประจำกลุ่ม หรือเจ้าหน้าที่ สกร.ระดับอำเภอเสนา','notice'=>'เลือกหมวดหมู่หรือค้นหาชื่อระบบที่ต้องการใช้งานได้จากหน้านี้'] as $key=>$value) {
             $stmt->execute([$key,$value]);
         }
+        $pdo->exec('INSERT IGNORE INTO system_categories(system_id,category_key) SELECT id,category FROM systems');
         $pdo->commit();
     } catch (Throwable $error) {
         $pdo->rollBack();

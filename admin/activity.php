@@ -1,0 +1,10 @@
+<?php
+require dirname(__DIR__).'/app/bootstrap.php';require dirname(__DIR__).'/app/admin-layout.php';$account=require_account();$ready=management_ready(db());$isAdmin=($account['role'] ?? 'admin')==='admin';$rows=[];$total=0;$page=1;
+if($ready){try{
+ $where=$isAdmin?'':' WHERE actor_id=?';$params=$isAdmin?[]:[$account['id']];$stmt=db()->prepare('SELECT COUNT(*) FROM audit_log'.$where);$stmt->execute($params);$total=(int)$stmt->fetchColumn();$page=max(1,min((int)($_GET['page'] ?? 1),max(1,(int)ceil($total/25))));
+ $stmt=db()->prepare("SELECT l.*,a.username,a.display_name FROM audit_log l LEFT JOIN admins a ON a.id=l.actor_id".$where.' ORDER BY l.id DESC LIMIT 25 OFFSET '.(($page-1)*25));$stmt->execute($params);$rows=$stmt->fetchAll();
+}catch(Throwable $err){unavailable($err);}}
+$labels=['system.create'=>'เพิ่มระบบ','system.update'=>'แก้ไขระบบ','system.delete'=>'ลบระบบ','system.bulk'=>'เปลี่ยนสถานะหลายระบบ','account.save'=>'บันทึกบัญชี','account.enable'=>'เปิดบัญชี','account.disable'=>'ปิดบัญชี','profile.update'=>'แก้ไขโปรไฟล์','settings.update'=>'แก้ไขหน้าเว็บ','navigation.save'=>'บันทึกเมนู/หมวดหมู่','navigation.delete'=>'ลบเมนู/หมวดหมู่','navigation.move'=>'จัดลำดับเมนู/หมวดหมู่'];
+admin_open('activity',$isAdmin?'ประวัติการทำงาน':'ประวัติของฉัน','ตรวจสอบผู้ดำเนินการและเวลาที่เปลี่ยนข้อมูล เริ่มบันทึกตั้งแต่อัปเดตครั้งนี้'); ?>
+<section class="panel"><div class="panel-heading"><h2>รายการเปลี่ยนแปลง <span class="count"><?= number_format($total) ?></span></h2></div><div class="activity-list"><?php foreach($rows as $row): ?><div class="dashboard-row"><?= icon('clipboard') ?><div><strong><?= e($labels[$row['action']] ?? $row['action']) ?></strong><p><?= e($row['subject']) ?></p><small><?= e(($row['display_name'] ?? '') ?: ($row['username'] ?? 'บัญชีที่ไม่มีแล้ว')) ?> · <?= e($row['created_at']) ?></small></div></div><?php endforeach; ?><?php if(!$rows): ?><p class="empty-message"><?= $ready?'ยังไม่มีประวัติการเปลี่ยนแปลง':'อัปเดตโครงสร้างเพื่อเปิดประวัติการทำงาน' ?></p><?php endif; ?></div><?php pagination($page,$total); ?></section>
+<?php admin_close();

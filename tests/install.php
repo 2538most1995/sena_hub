@@ -24,6 +24,7 @@ try {
     try { install_hub($pdo,$schema); } catch (RuntimeException $error) { $blocked=true; }
     expect($blocked && snapshot($pdo)===$before && (int)$pdo->query('SELECT id FROM unrelated_existing_site')->fetchColumn()===42, 'refuses a foreign database before modifying records');
     $pdo->exec('DROP TABLE unrelated_existing_site');
+    $pdo->exec('DROP TABLE system_categories');
     $pdo->exec('DROP TABLE systems');
     $pdo->exec('CREATE TABLE systems (id INT PRIMARY KEY)');
     $blocked=false;

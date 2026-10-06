@@ -20,7 +20,7 @@ function account_input_error(string $username, string $password, string $confirm
     } elseif ($confirm !== '') return 'กรุณากรอกรหัสผ่านใหม่ให้ตรงกัน';
     return '';
 }
-function save_hub_account(PDO $pdo, int $id, string $username, string $password, string $confirm, string $role): int {
+function save_hub_account(PDO $pdo, int $id, string $username, string $password, string $confirm, string $role, ?array $profile = null): int {
     $error = account_input_error($username, $password, $confirm, $id === 0);
     if ($error !== '') throw new InvalidArgumentException($error);
     if (!in_array($role, ['admin','teacher'], true)) throw new InvalidArgumentException('ระดับผู้ใช้ไม่ถูกต้อง');
@@ -28,11 +28,12 @@ function save_hub_account(PDO $pdo, int $id, string $username, string $password,
     $pdo->beginTransaction();
     try {
         // Serialize account edits to prevent two administrators demoting the last admins concurrently.
-        $rows = $pdo->query('SELECT id,role FROM admins ORDER BY id FOR UPDATE')->fetchAll(PDO::FETCH_ASSOC);
+        $hasActive=in_array('active',$pdo->query('SHOW COLUMNS FROM admins')->fetchAll(PDO::FETCH_COLUMN),true);
+        $rows = $pdo->query('SELECT id,role'.($hasActive?',active':',1 AS active').' FROM admins ORDER BY id FOR UPDATE')->fetchAll(PDO::FETCH_ASSOC);
         $current = null; $adminCount = 0;
-        foreach ($rows as $row) { if ($row['role'] === 'admin') $adminCount++; if ((int)$row['id'] === $id) $current = $row; }
+        foreach ($rows as $row) { if ($row['role'] === 'admin' && $row['active']) $adminCount++; if ((int)$row['id'] === $id) $current = $row; }
         if ($id && !$current) throw new InvalidArgumentException('ไม่พบบัญชีที่ต้องการแก้ไข');
-        if ($current && $current['role'] === 'admin' && $role !== 'admin' && $adminCount <= 1) throw new InvalidArgumentException('ต้องเหลือผู้ดูแลระบบอย่างน้อย 1 บัญชี');
+        if ($current && $current['role'] === 'admin' && $current['active'] && $role !== 'admin' && $adminCount <= 1) throw new InvalidArgumentException('ต้องเหลือผู้ดูแลระบบอย่างน้อย 1 บัญชี');
         if ($id) {
             $sql = 'UPDATE admins SET username=?,role=?'; $values = [$username,$role];
             if ($password !== '') { $sql .= ',password_hash=?'; $values[] = password_hash($password, PASSWORD_DEFAULT); }
@@ -41,6 +42,8 @@ function save_hub_account(PDO $pdo, int $id, string $username, string $password,
             $stmt = $pdo->prepare('INSERT INTO admins(username,password_hash,role) VALUES (?,?,?)');
             $stmt->execute([$username,password_hash($password, PASSWORD_DEFAULT),$role]); $id = (int)$pdo->lastInsertId();
         }
+        if($profile!==null) save_profile($pdo,$id,$profile);
+        if(function_exists('audit_change')) audit_change($pdo,'account.save','บัญชี #'.$id);
         $pdo->commit(); return $id;
     } catch (Throwable $error) {
         $pdo->rollBack();
