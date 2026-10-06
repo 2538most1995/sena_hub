@@ -3,7 +3,7 @@ declare(strict_types=1);
 header('Content-Type: text/html; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: strict-origin-when-cross-origin');
-header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self'; font-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+header("Content-Security-Policy: default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
 if (PHP_SAPI !== 'cli') {
     session_name('SENA_HUB_SESSION');
     session_set_cookie_params(['httponly'=>true,'secure'=>!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off','samesite'=>'Lax']);
@@ -68,7 +68,7 @@ function require_admin(): void {
     if (($account['role'] ?? 'admin') !== 'admin') { header('Location: account.php'); exit; }
 }
 function head(string $title, string $bodyClass=''): void { ?>
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#7524ef"><title><?= e($title) ?> · SENA Digital Hub</title><link rel="icon" type="image/png" sizes="32x32" href="<?= asset_base() ?>assets/favicon/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="<?= asset_base() ?>assets/favicon/favicon-16.png"><link rel="apple-touch-icon" sizes="180x180" href="<?= asset_base() ?>assets/favicon/apple-touch-icon.png"><link rel="stylesheet" href="<?= asset_base() ?>assets/css/app.css"><script defer src="<?= asset_base() ?>assets/js/app.js?v=multi-category-1"></script><?php if($bodyClass==='portal'): ?><link rel="stylesheet" href="assets/css/portal.css"><?php elseif(str_contains($bodyClass,'admin-ui')): ?><link rel="stylesheet" href="<?= asset_base() ?>assets/css/admin.css?v=multi-category-1"><?php endif; ?></head><body class="<?= e($bodyClass) ?>">
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#7524ef"><title><?= e($title) ?> · SENA Digital Hub</title><link rel="icon" type="image/png" sizes="32x32" href="<?= asset_base() ?>assets/favicon/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="<?= asset_base() ?>assets/favicon/favicon-16.png"><link rel="apple-touch-icon" sizes="180x180" href="<?= asset_base() ?>assets/favicon/apple-touch-icon.png"><link rel="stylesheet" href="<?= asset_base() ?>assets/css/app.css"><script defer src="<?= asset_base() ?>assets/js/app.js?v=uploaded-icons-1"></script><?php if($bodyClass==='portal'): ?><link rel="stylesheet" href="assets/css/portal.css"><?php elseif(str_contains($bodyClass,'admin-ui')): ?><link rel="stylesheet" href="<?= asset_base() ?>assets/css/admin.css?v=uploaded-icons-1"><?php endif; ?></head><body class="<?= e($bodyClass) ?>">
 <?php }
 function brand(string $home='./'): void { ?><a class="brand" href="<?= e($home) ?>"><img class="brand-logo" src="<?= asset_base() ?>assets/images/sena-logo.png" width="49" height="49" alt="ตรา สกร.เสนา"><span><strong>SENA <span>DIGITAL HUB</span></strong><small>ศูนย์รวมระบบดิจิทัล สกร.เสนา</small></span></a><?php }
 function unavailable(Throwable $error): void { error_log((string)$error); http_response_code(503); head('ระบบยังไม่พร้อม'); echo '<main class="auth-card"><h1>กำลังเตรียมระบบ</h1><p>กรุณาตรวจสอบการตั้งค่าฐานข้อมูล หรือติดต่อผู้ดูแลระบบ</p><a href="./">ลองอีกครั้ง</a></main></body></html>'; exit; }

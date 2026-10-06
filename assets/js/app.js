@@ -59,3 +59,32 @@ document.querySelectorAll('[data-service-favicon]').forEach(image => {
   image.addEventListener('error', () => { image.parentElement.classList.remove('has-favicon'); });
   if (image.complete) show();
 });
+
+const iconFile = document.querySelector('#iconFile');
+if (iconFile) {
+  let previewUrl;
+  const preview = document.querySelector('#iconPreview');
+  const existingSource = preview.getAttribute('src');
+  const feedback = document.querySelector('#uploadFeedback');
+  iconFile.addEventListener('change', () => {
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
+    feedback.textContent = '';
+    const file = iconFile.files[0];
+    iconFile.setCustomValidity('');
+    if (!file) {
+      if (existingSource) preview.src = existingSource; else preview.removeAttribute('src');
+      preview.parentElement.hidden = !existingSource;
+      document.querySelector('#iconPreviewLabel').textContent = 'รูปที่อัปโหลดไว้ — เว้นช่องไฟล์ว่างเพื่อเก็บรูปนี้';
+      return;
+    }
+    if (!['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      const message = 'เลือกรูป PNG, JPG หรือ WebP ขนาดไม่เกิน 2 MB';
+      iconFile.setCustomValidity(message); feedback.textContent = message;
+      return;
+    }
+    document.querySelector('select[name="icon_mode"]').value = 'upload';
+    previewUrl = URL.createObjectURL(file); preview.src = previewUrl;
+    preview.parentElement.hidden = false;
+    document.querySelector('#iconPreviewLabel').textContent = 'ตัวอย่างรูปใหม่ — กดบันทึกระบบเพื่อใช้งาน';
+  });
+}
